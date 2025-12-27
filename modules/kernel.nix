@@ -34,7 +34,7 @@ let
     INTERCONNECT_QCOM_X1E80100 = yes;
 
     # GPU (Adreno)
-    DRM_MSM = yes;
+    DRM_MSM = module;
 
     # PCIe
     PCIE_QCOM = yes;
