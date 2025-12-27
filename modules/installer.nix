@@ -143,8 +143,8 @@
     iw
     wirelesstools
     
-    # Firmware tools
-    fwupd
+    # Note: fwupd is excluded - it doesn't cross-compile (fwupd-efi needs native ld.bfd)
+    # Install it after booting the native system
   ];
 
   # Console font (readable on HiDPI)
