@@ -75,21 +75,21 @@
       search --set=root --label ${volumeID}
       linux /boot/${kernelFile} ${bootParams}
       initrd /boot/${initrdFile}
-      devicetree /dtbs/qcom/x1e80100-microsoft-romulus15.dtb
+      devicetree /dtbs/qcom/x1p64100-microsoft-romulus15.dtb
     }
     menuentry "NixOS Installer - Surface Laptop 7 (13.8 inch)" --class nixos {
       terminal_output gfxterm
       search --set=root --label ${volumeID}
       linux /boot/${kernelFile} ${bootParams}
       initrd /boot/${initrdFile}
-      devicetree /dtbs/qcom/x1e80100-microsoft-romulus13.dtb
+      devicetree /dtbs/qcom/x1p64100-microsoft-romulus13.dtb
     }
     menuentry "NixOS Installer - Debug (break=top, 15 inch)" --class nixos {
       terminal_output gfxterm
       search --set=root --label ${volumeID}
       linux /boot/${kernelFile} ${bootParams} break=top
       initrd /boot/${initrdFile}
-      devicetree /dtbs/qcom/x1e80100-microsoft-romulus15.dtb
+      devicetree /dtbs/qcom/x1p64100-microsoft-romulus15.dtb
     }
   '';
 

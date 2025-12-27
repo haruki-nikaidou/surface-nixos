@@ -10,57 +10,100 @@ let
   # Use latest kernel - 6.18+ has Surface Laptop 7 (Romulus) support
   linuxPackage = pkgs.linuxPackages_latest;
 
-  # Minimal kernel config for Snapdragon X Plus (X1E80100) - Surface Laptop 7
+  # Minimal kernel config for Snapdragon X Plus (x1p64100) - Surface Laptop 7
   # Only add Qualcomm-specific options; let NixOS handle common options
   kernelConfigOverrides = {
-    # === Core Qualcomm Platform ===
+    # Core Qualcomm Platform
+    ARM64 = yes;
     ARCH_QCOM = yes;
-
-    # === Qualcomm SoC Infrastructure ===
     QCOM_SCM = yes;
+    QCOM_SMEM = yes;
+    QCOM_SOCINFO = yes;
+    "ARM64_ERRATUM_*" = yes;
+    ARM_SMMU = yes;
+    ARM_SMMU_V3 = yes;
+    IOMMU_IO_PGTABLE_ARMV7S = yes;
+    QCOM_RPMH = yes;
     QCOM_COMMAND_DB = yes;
     QCOM_PDC = yes;
-    QCOM_RPMH = yes;
 
-    # === Clock Framework ===
+    # Clock
     COMMON_CLK_QCOM = yes;
     QCOM_CLK_RPMH = yes;
 
-    # === Interconnect ===
+    # Interconnect
     INTERCONNECT_QCOM = yes;
 
-    # === PCIe (required for NVMe) ===
-    PCIE_QCOM = yes;
+    # Pin control
+    PINCTRL_QCOM_SPMI_PMIC = yes;
+    PINCTRL_MSM = yes;
 
-    # === USB ===
+    # Regulators
+    REGULATOR_QCOM_SPMI = yes;
+    REGULATOR_QCOM_RPMH = yes;
+
+    # Power
+    ARM_QCOM_CPUFREQ_HW = yes;
+    QCOM_TSENS = yes;
+    THERMAL = yes;
+
+    # Storage
+    PCIE_QCOM = yes;
+    BLK_DEV_NVME = yes;
+    NVME_CORE = yes;
+
+    # USB
     USB_DWC3 = module;
     USB_DWC3_QCOM = module;
+    TYPEC = module;
+    TYPEC_UCSI = module;
+    UCSI_PMIC_GLINK = module;
 
-    # === I2C/SPI (for peripherals) ===
+    # I2C/SPI (for peripherals)
     I2C_QCOM_GENI = yes;
     SPI_QCOM_GENI = yes;
 
-    # === SPMI (for PMIC) ===
+    # SPMI (for PMIC)
     SPMI = yes;
 
-    # === Regulators ===
-    REGULATOR_QCOM_RPMH = yes;
-
-    # === GPU (Adreno) ===
+    # GPU (Adreno)
+    DRM = module;
     DRM_MSM = module;
+    DRM_MSM_GPU_STATE = module;
+    DRM_MSM_DPU = module;
+    DRM_MSM_DSI = module;
+    DRN_MSM_MDSS = module;
 
-    # === WiFi (ath12k) ===
+    # WiFi (ath12k)
+    WLAN = yes;
     ATH12K = module;
+    ATH12K_PCI = module;
+    ATH12K_DEBUG = module;
+    ATH12K_TRACING = module;
 
-    # === Input devices ===
+    # NPU (Hexagon)
+    QCOM_FASTRPC = yes;
+    REMOTEPROC = yes;
+    QCOM_Q6V5_PAS = yes;
+
+    # Audio
+    SND_SOC = yes;
+    SND_SOC_QCOM = yes;
+    SND_SOC_QDSP6 = module;
+    SND_SOC_QDSP6_APM = module;
+    SND_SOC_QDSP6_COMMON = module;
+
+    # Input devices
     HID_MULTITOUCH = module;
     I2C_HID_CORE = module;
     I2C_HID_ACPI = module;
 
-    # === Device Tree ===
+    # Device Tree
     OF = yes;
+    OF_FLATTREE = yes;
+    OF_EARLY_FLATTREE = yes;
 
-    # === EFI Boot ===
+    # EFI Boot
     EFI = yes;
     EFI_STUB = yes;
   };
@@ -72,7 +115,7 @@ in
   # Apply kernel config overrides
   boot.kernelPatches = [
     {
-      name = "surface-laptop7-x1e80100";
+      name = "surface-laptop7-x1p64100";
       patch = null;
       structuredExtraConfig = kernelConfigOverrides;
       # Ignore config validation errors for options with dependencies we can't control
@@ -92,10 +135,10 @@ in
     "earlyprintk=efi"
   ];
 
-  # Enable device tree - Surface Laptop 7 uses x1e80100-microsoft-romulus13.dtb
+  # Enable device tree - Surface Laptop 7 uses x1p64100-microsoft-romulus13.dtb
   hardware.deviceTree = {
     enable = true;
-    filter = "qcom/*.dtb";
+    filter = "*x1p64100*.dtb";
   };
 
   # Modules needed in initrd for boot

@@ -39,8 +39,8 @@ nix build .#kernel --log-format bar-with-logs
 ls result/dtbs/qcom/ | grep x1e
 
 # Expected files for Surface Laptop 7:
-# - x1e80100-microsoft-romulus15.dtb (15")
-# - x1e80100-microsoft-romulus13.dtb (13.8")
+# - x1p64100-microsoft-romulus15.dtb (15")
+# - x1p64100-microsoft-romulus13.dtb (13.8")
 ```
 
 ## Writing the ISO to USB
@@ -99,7 +99,7 @@ Get-ChildItem -Path "C:\Windows\System32\DriverStore\FileRepository" -Filter "*.
 # - qcsubsys_XXX (various subsystems)
 ```
 
-Copy these to `/lib/firmware/qcom/x1e80100/` on your NixOS install.
+Copy these to `/lib/firmware/qcom/x1p64100/` on your NixOS install.
 
 ## Troubleshooting
 
