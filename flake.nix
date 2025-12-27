@@ -21,6 +21,7 @@
           config = "aarch64-unknown-linux-gnu";
           system = targetSystem;
         };
+        config.allowUnfree = true;
       };
 
     in

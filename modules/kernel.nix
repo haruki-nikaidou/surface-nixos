@@ -1,12 +1,11 @@
 {
-  config,
   lib,
   pkgs,
   ...
 }:
 
 let
-  inherit (lib.kernel) yes module freeform;
+  inherit (lib.kernel) yes module;
 
   # Use latest kernel - 6.18+ should have Surface Laptop 7 DTB
   linuxPackage = pkgs.linuxPackages_latest;
