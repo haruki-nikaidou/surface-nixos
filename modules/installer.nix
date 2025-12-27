@@ -9,7 +9,7 @@
   boot.supportedFilesystems.zfs = lib.mkForce false;
 
   # ISO naming
-  isoImage.isoName = lib.mkForce "nixos-surface-laptop7-${config.system.nixos.label}-aarch64.iso";
+  image.fileName = lib.mkForce "nixos-surface-laptop7-${config.system.nixos.label}-aarch64.iso";
   isoImage.volumeID = lib.mkForce "NIXOS_SL7";
 
   # Use GRUB for EFI boot (required for DTB loading)
