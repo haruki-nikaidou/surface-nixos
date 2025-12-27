@@ -8,26 +8,21 @@
   outputs =
     { self, nixpkgs }:
     let
-      # Build on x86_64, target aarch64
-      buildSystem = "x86_64-linux";
+      # Build natively for aarch64 (uses binfmt/QEMU emulation on x86_64 hosts)
       targetSystem = "aarch64-linux";
 
-      pkgsNative = nixpkgs.legacyPackages.${buildSystem};
-
-      # Cross-compilation pkgs
-      pkgsCross = import nixpkgs {
-        localSystem = buildSystem;
-        crossSystem = {
-          config = "aarch64-unknown-linux-gnu";
-          system = targetSystem;
-        };
+      pkgs = import nixpkgs {
+        system = targetSystem;
         config.allowUnfree = true;
       };
 
+      # For dev shell on x86_64
+      pkgsNative = nixpkgs.legacyPackages."x86_64-linux";
+
     in
     {
-      # The installer ISO
-      packages.${buildSystem} = {
+      # The installer ISO (build with: nix build .#iso)
+      packages.${targetSystem} = {
         iso = self.nixosConfigurations.installer.config.system.build.isoImage;
 
         # Useful for debugging - just build the kernel
@@ -36,19 +31,9 @@
 
       nixosConfigurations.installer = nixpkgs.lib.nixosSystem {
         system = targetSystem;
-        pkgs = pkgsCross;
+        inherit pkgs;
 
         modules = [
-          # Cross-compilation setup
-          (
-            { ... }:
-            {
-              nixpkgs.buildPlatform = buildSystem;
-              nixpkgs.hostPlatform = targetSystem;
-            }
-          )
-
-          # Import our custom modules
           ./modules/kernel.nix
           ./modules/installer.nix
           ./modules/hardware.nix
@@ -56,7 +41,7 @@
       };
 
       # Dev shell for working on this
-      devShells.${buildSystem}.default = pkgsNative.mkShell {
+      devShells."x86_64-linux".default = pkgsNative.mkShell {
         buildInputs = with pkgsNative; [
           qemu
           nix-prefetch-git
