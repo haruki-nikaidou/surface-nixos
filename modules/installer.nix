@@ -89,8 +89,14 @@
     enable = true;
     settings.PermitRootLogin = "yes";
   };
-  users.users.root.initialPassword = "nixos";
-  users.users.nixos.initialPassword = "nixos";
+  users.users.root = {
+    initialPassword = "nixos";
+    initialHashedPassword = lib.mkForce null;
+  };
+  users.users.nixos = {
+    initialPassword = "nixos";
+    initialHashedPassword = lib.mkForce null;
+  };
 
   # Networking for installation
   networking = {
