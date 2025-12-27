@@ -5,7 +5,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
       # Build on x86_64, target aarch64
       buildSystem = "x86_64-linux";
@@ -27,20 +28,25 @@
       # The installer ISO
       packages.${buildSystem} = {
         iso = self.nixosConfigurations.installer.config.system.build.isoImage;
-        
+
         # Useful for debugging - just build the kernel
         kernel = self.nixosConfigurations.installer.config.boot.kernelPackages.kernel;
       };
 
       nixosConfigurations.installer = nixpkgs.lib.nixosSystem {
         system = targetSystem;
+        pkgs = pkgsCross;
 
         modules = [
           # Cross-compilation setup
-          ({ lib, ... }: {
-            nixpkgs.buildPlatform = buildSystem;
-            nixpkgs.hostPlatform = targetSystem;
-          })
+          (
+            { ... }:
+            {
+              nixpkgs.buildPlatform = buildSystem;
+              nixpkgs.hostPlatform = targetSystem;
+              nixpkgs.config.allowUnfree = true;
+            }
+          )
 
           # Import our custom modules
           ./modules/kernel.nix

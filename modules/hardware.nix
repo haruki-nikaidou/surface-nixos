@@ -1,10 +1,12 @@
-{ config, lib, pkgs, ... }:
+{
+  pkgs,
+  ...
+}:
 
 {
   # Linux firmware package (includes some Qualcomm firmware)
   hardware.firmware = [
     pkgs.linux-firmware
-    pkgs.firmwareLinuxNonfree
   ];
 
   # Enable all firmware regardless of license
@@ -26,7 +28,7 @@
   services.udev.extraRules = ''
     # Qualcomm X Elite platform devices
     SUBSYSTEM=="platform", DRIVER=="qcom-cpufreq-hw", TAG+="systemd"
-    
+
     # Surface Laptop 7 specific
     ATTR{idVendor}=="045e", ATTR{idProduct}=="0c1a", MODE="0666"
   '';
@@ -50,8 +52,8 @@
   };
 
   # CPU frequency scaling (if cpufreq works)
-  services.thermald.enable = false;  # Not compatible with Qualcomm
-  
+  services.thermald.enable = false; # Not compatible with Qualcomm
+
   # Disable services that won't work on this hardware
-  services.fwupd.enable = false;  # No LVFS support yet for Surface ARM
+  services.fwupd.enable = false; # No LVFS support yet for Surface ARM
 }
