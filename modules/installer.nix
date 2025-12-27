@@ -57,28 +57,37 @@
     cp -r ${config.boot.kernelPackages.kernel}/dtbs/qcom $out/EFI/dtbs/ || true
   '';
 
+  # Add Surface-specific kernel params
+  boot.kernelParams = [ "cma=128M" ];
+
   # Alternative: Use extraEntries for DTB-loading menu entries
-  # Note: added cma=128M which helps with memory allocation on X Elite
-  boot.loader.grub.extraEntries = ''
+  # Note: The initrd handles finding init automatically on NixOS ISOs
+  boot.loader.grub.extraEntries = let
+    kernelFile = config.system.boot.loader.kernelFile;
+    initrdFile = config.system.boot.loader.initrdFile;
+    volumeID = config.isoImage.volumeID;
+    # Hardcode essential boot params to avoid circular dependency with config.boot.kernelParams
+    bootParams = "findiso= root=live:LABEL=${volumeID} rd.live.image cma=128M";
+  in ''
     menuentry "NixOS Installer - Surface Laptop 7 (15 inch)" --class nixos {
       terminal_output gfxterm
-      search --set=root --label ${config.isoImage.volumeID}
-      linux /boot/${config.system.boot.loader.kernelFile} init=${config.system.build.toplevel}/init ${lib.concatStringsSep " " config.boot.kernelParams} cma=128M
-      initrd /boot/${config.system.boot.loader.initrdFile}
+      search --set=root --label ${volumeID}
+      linux /boot/${kernelFile} ${bootParams}
+      initrd /boot/${initrdFile}
       devicetree /dtbs/qcom/x1e80100-microsoft-romulus15.dtb
     }
     menuentry "NixOS Installer - Surface Laptop 7 (13.8 inch)" --class nixos {
       terminal_output gfxterm
-      search --set=root --label ${config.isoImage.volumeID}
-      linux /boot/${config.system.boot.loader.kernelFile} init=${config.system.build.toplevel}/init ${lib.concatStringsSep " " config.boot.kernelParams} cma=128M
-      initrd /boot/${config.system.boot.loader.initrdFile}
+      search --set=root --label ${volumeID}
+      linux /boot/${kernelFile} ${bootParams}
+      initrd /boot/${initrdFile}
       devicetree /dtbs/qcom/x1e80100-microsoft-romulus13.dtb
     }
     menuentry "NixOS Installer - Debug (break=top, 15 inch)" --class nixos {
       terminal_output gfxterm
-      search --set=root --label ${config.isoImage.volumeID}
-      linux /boot/${config.system.boot.loader.kernelFile} init=${config.system.build.toplevel}/init ${lib.concatStringsSep " " config.boot.kernelParams} cma=128M break=top
-      initrd /boot/${config.system.boot.loader.initrdFile}
+      search --set=root --label ${volumeID}
+      linux /boot/${kernelFile} ${bootParams} break=top
+      initrd /boot/${initrdFile}
       devicetree /dtbs/qcom/x1e80100-microsoft-romulus15.dtb
     }
   '';
