@@ -45,7 +45,6 @@
             {
               nixpkgs.buildPlatform = buildSystem;
               nixpkgs.hostPlatform = targetSystem;
-              nixpkgs.config.allowUnfree = true;
             }
           )
 
