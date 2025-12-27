@@ -19,7 +19,6 @@ let
     QCOM_SCM = yes;
     QCOM_SMEM = yes;
     QCOM_SOCINFO = yes;
-    "ARM64_ERRATUM_*" = yes;
     ARM_SMMU = yes;
     ARM_SMMU_V3 = yes;
     IOMMU_IO_PGTABLE_ARMV7S = yes;
@@ -67,8 +66,8 @@ let
     SPMI = yes;
 
     # GPU (Adreno)
-    DRM = module;
-    DRM_MSM = module;
+    DRM = yes;
+    DRM_MSM = yes;
     DRM_MSM_GPU_STATE = module;
     DRM_MSM_DPU = module;
     DRM_MSM_DSI = module;
