@@ -22,6 +22,7 @@
     efiSupport = true;
     efiInstallAsRemovable = true;
     device = "nodev";
+    memtest86.enable = lib.mkForce false;  # Not available on aarch64
   };
 
   # Add DTBs to ISO and configure boot
