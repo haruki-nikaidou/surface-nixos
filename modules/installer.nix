@@ -5,6 +5,9 @@
     "${modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
   ];
 
+  # Disable ZFS - it's broken on kernel 6.18+
+  boot.supportedFilesystems.zfs = lib.mkForce false;
+
   # ISO naming
   isoImage.isoName = lib.mkForce "nixos-surface-laptop7-${config.system.nixos.label}-aarch64.iso";
   isoImage.volumeID = lib.mkForce "NIXOS_SL7";
