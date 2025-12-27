@@ -4,7 +4,7 @@
 }:
 
 {
-  # Linux firmware package (includes some Qualcomm firmware)
+  # Linux firmware package (includes Qualcomm firmware)
   hardware.firmware = [
     pkgs.linux-firmware
   ];
@@ -13,7 +13,7 @@
   hardware.enableAllFirmware = true;
   hardware.enableRedistributableFirmware = true;
 
-  # GPU support (Adreno in X Elite)
+  # GPU support (Adreno 741 in Snapdragon X Elite/Plus)
   hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
@@ -26,17 +26,16 @@
 
   # Services that might help with hardware
   services.udev.extraRules = ''
-    # Qualcomm X Elite platform devices
+    # Qualcomm X Elite/Plus platform devices
     SUBSYSTEM=="platform", DRIVER=="qcom-cpufreq-hw", TAG+="systemd"
 
     # Surface Laptop 7 specific
     ATTR{idVendor}=="045e", ATTR{idProduct}=="0c1a", MODE="0666"
   '';
 
-  # Kernel modules to load
+  # Kernel modules to load at runtime
   boot.kernelModules = [
-    "qcom_q6v5_pas"
-    "qcom_pil_info"
+    # Load these after boot if available
   ];
 
   # Blacklist problematic modules if needed
@@ -51,9 +50,7 @@
     "kernel.panic_on_oops" = 1;
   };
 
-  # CPU frequency scaling (if cpufreq works)
-  services.thermald.enable = false; # Not compatible with Qualcomm
-
-  # Disable services that won't work on this hardware
-  services.fwupd.enable = false; # No LVFS support yet for Surface ARM
+  # Disable services not compatible with Qualcomm ARM64
+  services.thermald.enable = false;
+  services.fwupd.enable = false;
 }

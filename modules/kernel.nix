@@ -5,67 +5,107 @@
 }:
 
 let
-  inherit (lib.kernel) yes module;
+  inherit (lib.kernel) yes no module;
 
-  # Use latest kernel - 6.18+ should have Surface Laptop 7 DTB
+  # Use latest kernel - 6.18+ has Surface Laptop 7 (Romulus) support
   linuxPackage = pkgs.linuxPackages_latest;
 
-  # Kernel config overrides to ensure Qualcomm support
+  # Kernel config for Snapdragon X Plus (X1E80100) - Surface Laptop 7
+  # Only include options that exist in mainline 6.18+
   kernelConfigOverrides = {
-    # Qualcomm platform support
+    # === ARM64 Platform ===
     ARCH_QCOM = yes;
 
-    # Snapdragon X Elite (X1E80100) specific
-    ARM_QCOM_CPUFREQ_HW = yes;
-    QCOM_CPUCP = yes;
-
-    # Power management
+    # === Qualcomm SoC Core Support ===
+    QCOM_SCM = yes;
+    QCOM_COMMAND_DB = yes;
     QCOM_PDC = yes;
     QCOM_RPMH = yes;
     QCOM_RPMHPD = yes;
-    QCOM_RPMPD = yes;
 
-    # Clock controllers
+    # === Clock Controllers ===
     COMMON_CLK_QCOM = yes;
-    CLK_X1E80100_GCC = yes;
+    QCOM_CLK_RPMH = yes;
 
-    # Interconnect
+    # === CPU Frequency Scaling ===
+    ARM_QCOM_CPUFREQ_HW = yes;
+
+    # === Power Domains ===
+    QCOM_AOSS_QMP = yes;
+
+    # === Interconnect ===
     INTERCONNECT_QCOM = yes;
-    INTERCONNECT_QCOM_X1E80100 = yes;
 
-    # GPU (Adreno)
-    DRM_MSM = module;
-
-    # PCIe
+    # === PCIe (for NVMe, WiFi) ===
     PCIE_QCOM = yes;
 
-    # USB
-    USB_DWC3 = yes;
-    USB_DWC3_QCOM = yes;
-    PHY_QCOM_QMP = yes;
-    PHY_QCOM_SNPS_EUSB2 = yes;
-
-    # NVMe
+    # === NVMe Storage ===
     NVME_CORE = yes;
     BLK_DEV_NVME = yes;
 
-    # I2C/SPI for peripherals
+    # === USB Support ===
+    USB_DWC3 = module;
+    USB_DWC3_QCOM = module;
+    PHY_QCOM_QMP_USB = yes;
+    TYPEC = yes;
+    TYPEC_UCSI = yes;
+
+    # === I2C/SPI for peripherals ===
     I2C_QCOM_GENI = yes;
     SPI_QCOM_GENI = yes;
 
-    # WiFi (ath12k for Qualcomm WiFi 7)
-    ATH12K = module;
-    ATH12K_PCI = module;
-
-    # Pinctrl
+    # === GPIO/Pinctrl ===
     PINCTRL_QCOM_SPMI_PMIC = yes;
-    PINCTRL_X1E80100 = yes;
+    PINCTRL_MSM = yes;
 
-    # RTC
+    # === SPMI (for PMIC) ===
+    SPMI = yes;
+    SPMI_MSM_PMIC_ARB = yes;
+
+    # === Regulators ===
+    REGULATOR_QCOM_RPMH = yes;
+    REGULATOR_QCOM_SPMI = yes;
+
+    # === GPU (Adreno 741 in X Elite/Plus) ===
+    DRM_MSM = module;
+    DRM_MSM_GPU_STATE = yes;
+
+    # === WiFi (ath12k for Qualcomm WiFi 7) ===
+    ATH12K = module;
+    # Note: ATH12K_PCI is selected automatically when ATH12K is enabled
+
+    # === Bluetooth ===
+    BT_HCIUART = module;
+    BT_HCIUART_QCA = yes;
+
+    # === RTC ===
     RTC_DRV_PM8XXX = yes;
 
-    # Ensure DTBs are built
-    BUILD_ARM64_DT_OVERLAY = yes;
+    # === Firmware loading ===
+    FW_LOADER = yes;
+    FW_LOADER_USER_HELPER = no;
+    FW_LOADER_COMPRESS = yes;
+
+    # === Remoteproc (for DSP/modem) ===
+    REMOTEPROC = yes;
+    QCOM_Q6V5_PAS = module;
+    QCOM_PIL_INFO = yes;
+
+    # === Sound (for audio DSP) ===
+    SND_SOC_QCOM = module;
+
+    # === Input (Surface keyboard/touchpad) ===
+    HID_MULTITOUCH = yes;
+    I2C_HID_CORE = yes;
+    I2C_HID_ACPI = yes;
+
+    # === Device Tree ===
+    OF = yes;
+    OF_OVERLAY = yes;
+
+    # === EFI ===
+    EFI = yes;
+    EFI_STUB = yes;
   };
 
 in
@@ -75,36 +115,46 @@ in
   # Apply kernel config overrides
   boot.kernelPatches = [
     {
-      name = "qcom-x1e-support";
+      name = "surface-laptop7-x1e80100";
       patch = null;
       structuredExtraConfig = kernelConfigOverrides;
     }
   ];
 
-  # Critical boot parameters for X Elite
+  # Critical boot parameters for Snapdragon X Elite/Plus
   boot.kernelParams = [
+    # Don't disable unused clocks/power domains during boot
     "clk_ignore_unused"
     "pd_ignore_unused"
+    # Disable pointer authentication (can cause issues)
     "arm64.nopauth"
+    # Verbose logging for debugging
     "loglevel=7"
     "earlyprintk=efi"
   ];
 
-  # Enable device tree
+  # Enable device tree - Surface Laptop 7 uses x1e80100-microsoft-romulus13.dtb
   hardware.deviceTree = {
     enable = true;
-    # Filter to only include Qualcomm DTBs (reduces ISO size)
+    # Include Qualcomm DTBs
     filter = "qcom/*.dtb";
   };
 
-  # Make sure firmware loading works
+  # Modules needed in initrd for boot
   boot.initrd.includeDefaultModules = true;
   boot.initrd.availableKernelModules = [
     "nvme"
     "xhci_pci"
+    "xhci_hcd"
     "usb_storage"
     "uas"
     "usbhid"
     "hid_generic"
+    "hid_multitouch"
+  ];
+
+  # Modules to load at boot
+  boot.kernelModules = [
+    "nvme"
   ];
 }
