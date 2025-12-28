@@ -50,6 +50,7 @@ let
     PCIE_QCOM = yes;
     BLK_DEV_NVME = yes;
     NVME_CORE = yes;
+    NVME_AUTH = lib.mkForce yes;
 
     # USB
     USB_DWC3 = module;
