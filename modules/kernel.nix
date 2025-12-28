@@ -67,11 +67,9 @@ let
 
     # GPU (Adreno)
     DRM = yes;
-    DRM_MSM = yes;
-    DRM_MSM_GPU_STATE = module;
-    DRM_MSM_DPU = module;
-    DRM_MSM_DSI = module;
-    DRN_MSM_MDSS = module;
+    DRM_MSM_DPU = yes;
+    DRM_MSM_DSI = yes;
+    DRM_MSM_MDSS = yes;
 
     # WiFi (ath12k)
     WLAN = yes;
