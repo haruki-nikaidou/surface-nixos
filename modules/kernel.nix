@@ -129,8 +129,7 @@ in
 
   # Enable device tree - Surface Laptop 7 uses x1p64100-microsoft-romulus13.dtb
   hardware.deviceTree = {
-    enable = true;
-    filter = "*x1p64100*.dtb";
+    enable = false;
   };
 
   # Modules needed in initrd for boot
