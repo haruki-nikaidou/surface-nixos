@@ -79,11 +79,8 @@ let
     # NPU (Hexagon)
     QCOM_FASTRPC = yes;
     REMOTEPROC = yes;
-    QCOM_Q6V5_PAS = yes;
 
     # Audio
-    SND_SOC = yes;
-    SND_SOC_QCOM = yes;
     SND_SOC_QDSP6 = module;
     SND_SOC_QDSP6_APM = module;
     SND_SOC_QDSP6_COMMON = module;
