@@ -51,6 +51,5 @@
   };
 
   # Disable services not compatible with Qualcomm ARM64
-  services.thermald.enable = false;
-  services.fwupd.enable = false;
+  services.fwupd.enable = true;
 }

@@ -98,6 +98,9 @@ let
     # EFI Boot
     EFI = yes;
     EFI_STUB = yes;
+
+    STAGING_MEDIA = yes;
+    APDS9960 = module;
   };
 
 in
