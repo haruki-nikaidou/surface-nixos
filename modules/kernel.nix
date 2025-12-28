@@ -77,8 +77,6 @@ let
     WLAN = yes;
     ATH12K = module;
     ATH12K_PCI = module;
-    ATH12K_DEBUG = module;
-    ATH12K_TRACING = module;
 
     # NPU (Hexagon)
     QCOM_FASTRPC = yes;
