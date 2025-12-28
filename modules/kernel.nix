@@ -74,7 +74,6 @@ let
     # WiFi (ath12k)
     WLAN = yes;
     ATH12K = module;
-    ATH12K_PCI = module;
 
     # NPU (Hexagon)
     QCOM_FASTRPC = yes;
