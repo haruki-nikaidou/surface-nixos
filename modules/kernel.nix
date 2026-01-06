@@ -7,7 +7,7 @@
 let
   inherit (lib.kernel) yes module;
 
-  # Use latest kernel - 6.18+ has Surface Laptop 7 (Romulus) support
+  # Use latest kernel - 6.18+ has Surface Laptop 7 (Denali) support
   linuxPackage = pkgs.linuxPackages_latest;
 
   # Minimal kernel config for Snapdragon X Plus (x1p64100) - Surface Laptop 7
@@ -130,7 +130,7 @@ in
     "earlyprintk=efi"
   ];
 
-  # Enable device tree - Surface Laptop 7 uses x1p64100-microsoft-romulus13.dtb
+  # Enable device tree - Surface Laptop 7 uses x1p64100-microsoft-denali.dtb
   hardware.deviceTree = {
     enable = false;
   };

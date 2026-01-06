@@ -39,8 +39,7 @@ nix build .#kernel --log-format bar-with-logs
 ls result/dtbs/qcom/ | grep x1e
 
 # Expected files for Surface Laptop 7:
-# - x1p64100-microsoft-romulus15.dtb (15")
-# - x1p64100-microsoft-romulus13.dtb (13.8")
+# - x1p64100-microsoft-denali.dtb
 ```
 
 ## Writing the ISO to USB
@@ -61,9 +60,7 @@ sudo dd if=result/iso/nixos-surface-laptop7-*.iso of=/dev/sdX bs=4M status=progr
 4. Disable Secure Boot (Boot Configuration → Secure Boot → Disabled)
 5. Configure boot order or use Boot Menu (Volume Up + Power at boot)
 6. Select USB device
-7. In GRUB menu, choose your model:
-   - "Surface Laptop 7 (15")" for 15-inch model
-   - "Surface Laptop 7 (13.8")" for 13.8-inch model
+7. In GRUB menu, select "NixOS Installer - Surface Laptop 7"
 
 ## What Should Work
 
@@ -112,7 +109,7 @@ The DTB isn't being loaded. Try:
 
 ### Kernel panic or hang
 
-Check if it's a DTB mismatch. The Surface Laptop 7 15" uses `romulus15`, 13.8" uses `romulus13`.
+Check if it's a DTB mismatch. The Surface Laptop 7 uses `x1p64100-microsoft-denali.dtb`.
 
 ### No display at all
 
