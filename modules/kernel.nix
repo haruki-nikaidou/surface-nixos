@@ -111,9 +111,9 @@ in
   boot.kernelPatches = [
     {
       name = "arm64: dts: qcom: Add support for X1-based Surface Pro 11";
-      patch = pkgs.fetchpatch {
-        url = "https://lore.kernel.org/all/qptvyecgevfbknaepnyplv2543wojt2cgj26kdsaaytnt6r3rk@kko2bjurdbyp/raw";
-        sha256 = "15wwrazy9l2i293yxfhq88kzvj7ypx309y11v85xryfxaqqhardd";
+      patch = pkgs.fetchurl {
+        url = "https://lore.kernel.org/all/20251220-surface-sp11-for-next-v6-4-81f7451edb77@gmail.com/raw";
+        sha256 = "0nr8zz1mq2z5sihd4i7wfk0kfad30hm34cvk7awbpjp8h9gqcq2i";
       };
     }
     {
