@@ -110,6 +110,13 @@ in
   # Apply kernel config overrides
   boot.kernelPatches = [
     {
+      name = "arm64: dts: qcom: Add support for X1-based Surface Pro 11";
+      patch = pkgs.fetchpatch {
+        url = "https://lore.kernel.org/all/qptvyecgevfbknaepnyplv2543wojt2cgj26kdsaaytnt6r3rk@kko2bjurdbyp/raw";
+        sha256 = "15wwrazy9l2i293yxfhq88kzvj7ypx309y11v85xryfxaqqhardd";
+      };
+    }
+    {
       name = "surface-laptop7-x1p64100";
       patch = null;
       structuredExtraConfig = kernelConfigOverrides;

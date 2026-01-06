@@ -1,4 +1,10 @@
-{ config, lib, pkgs, modulesPath, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
 
 {
   imports = [
@@ -22,7 +28,7 @@
     efiSupport = true;
     efiInstallAsRemovable = true;
     device = "nodev";
-    memtest86.enable = lib.mkForce false;  # Not available on aarch64
+    memtest86.enable = lib.mkForce false; # Not available on aarch64
   };
 
   # Add DTBs to ISO and configure boot
@@ -47,7 +53,7 @@
     # Enable graphics terminal - required for keyboard on Surface Laptop 7
     terminal_output gfxterm
     terminal_input console
-    
+
     # Increase timeout to give time to select
     set timeout=30
   '';
@@ -63,35 +69,37 @@
 
   # Alternative: Use extraEntries for DTB-loading menu entries
   # Note: The initrd handles finding init automatically on NixOS ISOs
-  boot.loader.grub.extraEntries = let
-    kernelFile = config.system.boot.loader.kernelFile;
-    initrdFile = config.system.boot.loader.initrdFile;
-    volumeID = config.isoImage.volumeID;
-    # Hardcode essential boot params to avoid circular dependency with config.boot.kernelParams
-    bootParams = "findiso= root=live:LABEL=${volumeID} rd.live.image cma=128M";
-  in ''
-    menuentry "NixOS Installer - Surface Laptop 7 (15 inch)" --class nixos {
-      terminal_output gfxterm
-      search --set=root --label ${volumeID}
-      linux /boot/${kernelFile} ${bootParams}
-      initrd /boot/${initrdFile}
-      devicetree /dtbs/qcom/x1p64100-microsoft-romulus15.dtb
-    }
-    menuentry "NixOS Installer - Surface Laptop 7 (13.8 inch)" --class nixos {
-      terminal_output gfxterm
-      search --set=root --label ${volumeID}
-      linux /boot/${kernelFile} ${bootParams}
-      initrd /boot/${initrdFile}
-      devicetree /dtbs/qcom/x1p64100-microsoft-romulus13.dtb
-    }
-    menuentry "NixOS Installer - Debug (break=top, 15 inch)" --class nixos {
-      terminal_output gfxterm
-      search --set=root --label ${volumeID}
-      linux /boot/${kernelFile} ${bootParams} break=top
-      initrd /boot/${initrdFile}
-      devicetree /dtbs/qcom/x1p64100-microsoft-romulus15.dtb
-    }
-  '';
+  boot.loader.grub.extraEntries =
+    let
+      kernelFile = config.system.boot.loader.kernelFile;
+      initrdFile = config.system.boot.loader.initrdFile;
+      volumeID = config.isoImage.volumeID;
+      # Hardcode essential boot params to avoid circular dependency with config.boot.kernelParams
+      bootParams = "findiso= root=live:LABEL=${volumeID} rd.live.image cma=128M";
+    in
+    ''
+      menuentry "NixOS Installer - Surface Laptop 7 (15 inch)" --class nixos {
+        terminal_output gfxterm
+        search --set=root --label ${volumeID}
+        linux /boot/${kernelFile} ${bootParams}
+        initrd /boot/${initrdFile}
+        devicetree /dtbs/qcom/x1p64100-microsoft-romulus15.dtb
+      }
+      menuentry "NixOS Installer - Surface Laptop 7 (13.8 inch)" --class nixos {
+        terminal_output gfxterm
+        search --set=root --label ${volumeID}
+        linux /boot/${kernelFile} ${bootParams}
+        initrd /boot/${initrdFile}
+        devicetree /dtbs/qcom/x1p64100-microsoft-romulus13.dtb
+      }
+      menuentry "NixOS Installer - Debug (break=top, 15 inch)" --class nixos {
+        terminal_output gfxterm
+        search --set=root --label ${volumeID}
+        linux /boot/${kernelFile} ${bootParams} break=top
+        initrd /boot/${initrdFile}
+        devicetree /dtbs/qcom/x1p64100-microsoft-romulus15.dtb
+      }
+    '';
 
   # Enable SSH for headless install (useful if display doesn't work)
   systemd.services.sshd.wantedBy = lib.mkForce [ "multi-user.target" ];
@@ -111,7 +119,7 @@
   # Networking for installation
   networking = {
     hostName = "nixos-installer";
-    wireless.enable = false;  # We'll use NetworkManager
+    wireless.enable = true; # We'll use NetworkManager
     networkmanager.enable = true;
   };
 
@@ -122,27 +130,27 @@
     git
     wget
     curl
-    
+
     # Disk tools
     parted
     gptfdisk
     dosfstools
     e2fsprogs
     btrfs-progs
-    
+
     # Hardware debugging
     pciutils
     usbutils
     lshw
     dmidecode
-    
+
     # DTB tools
     dtc
-    
+
     # Network
     iw
     wirelesstools
-    
+
     # Note: fwupd is excluded - it doesn't cross-compile (fwupd-efi needs native ld.bfd)
     # Install it after booting the native system
   ];
