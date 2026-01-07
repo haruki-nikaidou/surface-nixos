@@ -5,7 +5,7 @@
 }:
 
 let
-  inherit (lib.kernel) yes module;
+  inherit (lib.kernel) yes no module;
 
   # Use latest kernel - 6.18+ has Surface Laptop 7 (Denali) support
   linuxPackage = pkgs.linuxPackages_latest;
@@ -66,11 +66,12 @@ let
     # SPMI (for PMIC)
     SPMI = yes;
 
-    # GPU (Adreno)
+    # GPU (Adreno) - disable AMD GPU driver (not applicable to ARM64/Qualcomm)
     DRM = yes;
     DRM_MSM_DPU = yes;
     DRM_MSM_DSI = yes;
     DRM_MSM_MDSS = yes;
+    DRM_AMDGPU = lib.mkForce no;
 
     # WiFi (ath12k)
     WLAN = yes;
