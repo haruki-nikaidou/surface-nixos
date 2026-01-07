@@ -15,10 +15,6 @@
         system = targetSystem;
         config.allowUnfree = true;
       };
-
-      # For dev shell on x86_64
-      pkgsNative = nixpkgs.legacyPackages."x86_64-linux";
-
     in
     {
       # The installer ISO (build with: nix build .#iso)
@@ -37,15 +33,6 @@
           ./modules/kernel.nix
           ./modules/installer.nix
           ./modules/hardware.nix
-        ];
-      };
-
-      # Dev shell for working on this
-      devShells."x86_64-linux".default = pkgsNative.mkShell {
-        buildInputs = with pkgsNative; [
-          qemu
-          nix-prefetch-git
-          nix-prefetch-github
         ];
       };
     };
