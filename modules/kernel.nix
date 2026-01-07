@@ -132,7 +132,8 @@ in
 
   # Enable device tree - Surface Laptop 7 uses x1p64100-microsoft-denali.dtb
   hardware.deviceTree = {
-    enable = false;
+    enable = true;
+    filter = "qcom/*.dtb";
   };
 
   # Modules needed in initrd for boot
