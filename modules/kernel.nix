@@ -111,7 +111,7 @@ in
   boot.kernelPatches = [
     {
       name = "surface-laptop7-x1p64100";
-      patch = null;
+      patch = ../surface.patch;
       structuredExtraConfig = kernelConfigOverrides;
       # Ignore config validation errors for options with dependencies we can't control
       ignoreConfigErrors = true;
