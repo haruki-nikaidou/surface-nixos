@@ -5,7 +5,7 @@
 }:
 
 let
-  inherit (lib.kernel) yes no module;
+  inherit (lib.kernel) yes no module unset;
 
   # Use latest kernel - 6.18+ has Surface Laptop 7 (Denali) support
   linuxPackage = pkgs.linuxPackages_latest;
@@ -96,6 +96,10 @@ let
     STAGING_MEDIA = yes;
     APDS9960 = module;
     DEBUG_INFO_BTF = lib.mkForce no;
+
+    # Unset options removed/renamed in Linux 6.18+ (set by NixOS common-config)
+    NET_SCH_BPF = lib.mkForce unset;
+    SCHED_CLASS_EXT = lib.mkForce unset;
   };
 
 in
