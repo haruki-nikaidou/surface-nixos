@@ -116,10 +116,25 @@
     networkmanager.enable = true;
   };
 
+  # XFCE Desktop Environment for GUI installation
+  services.xserver = {
+    enable = true;
+    desktopManager.xfce.enable = true;
+    displayManager.lightdm = {
+      enable = true;
+      greeters.slick.enable = true;
+    };
+  };
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "nixos";
+  };
+
   # Useful packages in installer
   environment.systemPackages = with pkgs; [
     # Essentials
     vim
+    helix
     git
     wget
     curl
