@@ -5,7 +5,7 @@
 }:
 
 let
-  inherit (lib.kernel) yes module;
+  inherit (lib.kernel) yes no module;
 
   # Use latest kernel - 6.18+ has Surface Laptop 7 (Denali) support
   linuxPackage = pkgs.linuxPackages_latest;
@@ -95,6 +95,7 @@ let
 
     STAGING_MEDIA = yes;
     APDS9960 = module;
+    DEBUG_INFO_BTF = lib.mkForce no;
   };
 
 in
