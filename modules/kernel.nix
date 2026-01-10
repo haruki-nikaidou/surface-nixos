@@ -8,7 +8,7 @@ let
   inherit (lib.kernel) yes no module unset;
 
   # Use latest kernel - 6.18+ has Surface Laptop 7 (Denali) support
-  linuxPackage = pkgs.linuxPackages_latest;
+  linuxPackage = pkgs.linuxPackages_testing;
 
   # Minimal kernel config for Snapdragon X Plus (x1p64100) - Surface Laptop 7
   # Only add Qualcomm-specific options; let NixOS handle common options
