@@ -48,8 +48,15 @@
     "dtbs" = "${config.boot.kernelPackages.kernel}/dtbs";
   };
 
-  # Note: boot.loader.grub.extraConfig is for the INSTALLED system's GRUB,
-  # not the ISO boot menu. ISO boot menu is configured via isoImage.efiGrubCfg below.
+  # GRUB settings - gfxterm is needed for keyboard to work in GRUB on Surface
+  boot.loader.grub.extraConfig = ''
+    # Enable graphics terminal - required for keyboard on Surface Laptop 7
+    terminal_output gfxterm
+    terminal_input console
+
+    # Increase timeout to give time to select
+    set timeout=30
+  '';
 
   # Create a custom GRUB config snippet that will be included
   boot.loader.grub.extraPrepareConfig = ''
@@ -60,39 +67,28 @@
   # Add Surface-specific kernel params
   boot.kernelParams = [ "cma=128M" ];
 
-  # Custom GRUB config for the ISO boot menu (not the installed system!)
-  # isoImage.efiGrubCfg overrides the default ISO boot menu
-  isoImage.efiGrubCfg =
+  # Alternative: Use extraEntries for DTB-loading menu entries
+  # Note: The initrd handles finding init automatically on NixOS ISOs
+  boot.loader.grub.extraEntries =
     let
       kernelFile = config.system.boot.loader.kernelFile;
       initrdFile = config.system.boot.loader.initrdFile;
       volumeID = config.isoImage.volumeID;
-      # Boot params for live system
-      bootParams = "findiso= root=live:LABEL=${volumeID} rd.live.image cma=128M clk_ignore_unused pd_ignore_unused arm64.nopauth loglevel=7";
+      # Hardcode essential boot params to avoid circular dependency with config.boot.kernelParams
+      bootParams = "findiso= root=live:LABEL=${volumeID} rd.live.image cma=128M";
     in
     ''
-      # Enable graphics terminal - required for keyboard on Surface Laptop 7
-      terminal_output gfxterm
-      terminal_input console
-      
-      set timeout=30
-      set default=0
-
       menuentry "NixOS Installer - Surface Laptop 7" --class nixos {
+        terminal_output gfxterm
         search --set=root --label ${volumeID}
         linux /boot/${kernelFile} ${bootParams}
         initrd /boot/${initrdFile}
         devicetree /dtbs/qcom/x1p64100-microsoft-denali.dtb
       }
       menuentry "NixOS Installer - Debug (break=top)" --class nixos {
+        terminal_output gfxterm
         search --set=root --label ${volumeID}
         linux /boot/${kernelFile} ${bootParams} break=top
-        initrd /boot/${initrdFile}
-        devicetree /dtbs/qcom/x1p64100-microsoft-denali.dtb
-      }
-      menuentry "NixOS Installer - Debug (break=premount)" --class nixos {
-        search --set=root --label ${volumeID}
-        linux /boot/${kernelFile} ${bootParams} break=premount
         initrd /boot/${initrdFile}
         devicetree /dtbs/qcom/x1p64100-microsoft-denali.dtb
       }
