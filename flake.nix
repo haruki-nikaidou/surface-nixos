@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     linux-next-src = {
-      url = "git+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git";
+      url = "git+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git?ref=refs/tags/next-20260210&shallow=1";
       flake = false;
     };
   };
