@@ -13,6 +13,7 @@
     {
       self,
       nixpkgs,
+      ...
     }@inputs:
     let
       # Build natively for aarch64 (uses binfmt/QEMU emulation on x86_64 hosts)
