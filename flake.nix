@@ -3,10 +3,17 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    linux-next-src = {
+      url = "git+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git";
+      flake = false;
+    };
   };
 
   outputs =
-    { self, nixpkgs }:
+    {
+      self,
+      nixpkgs,
+    }@inputs:
     let
       # Build natively for aarch64 (uses binfmt/QEMU emulation on x86_64 hosts)
       targetSystem = "aarch64-linux";
@@ -26,6 +33,7 @@
       };
 
       nixosConfigurations.installer = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };
         system = targetSystem;
         inherit pkgs;
 
