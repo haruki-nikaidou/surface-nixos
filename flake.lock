@@ -1,30 +1,12 @@
 {
   "nodes": {
-    "linux-next-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1770762426,
-        "narHash": "sha256-lWWwxoW25bnLkIkX4gf6WbgRDtgNhKubG8MqIxr6wHU=",
-        "ref": "refs/tags/next-20260210",
-        "rev": "fd9678829d6dd0c10fde080b536abf4b1121c346",
-        "shallow": true,
-        "type": "git",
-        "url": "https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git"
-      },
-      "original": {
-        "ref": "refs/tags/next-20260210",
-        "shallow": true,
-        "type": "git",
-        "url": "https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git"
-      }
-    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1771369470,
-        "narHash": "sha256-0NBlEBKkN3lufyvFegY4TYv5mCNHbi5OmBDrzihbBMQ=",
+        "lastModified": 1774709303,
+        "narHash": "sha256-D3Q07BbIA2KnTcSXIqqu9P586uWxN74zNoCH3h2ESHg=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "0182a361324364ae3f436a63005877674cf45efb",
+        "rev": "8110df5ad7abf5d4c0f6fb0f8f978390e77f9685",
         "type": "github"
       },
       "original": {
@@ -36,7 +18,6 @@
     },
     "root": {
       "inputs": {
-        "linux-next-src": "linux-next-src",
         "nixpkgs": "nixpkgs"
       }
     }

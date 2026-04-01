@@ -1,12 +1,6 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 {
-  boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_latest.override {
-    argsOverride = {
-      src = inputs.linux-next-src;
-      version = "6.19.0-next-20260210";
-      modDirVersion = "6.19.0-next-20260210";
-    };
-  });
+  boot.kernelPackages = pkgs.linuxPackages_testing;
   # Critical boot parameters for Snapdragon X Elite/Plus
   boot.kernelParams = [
     # Don't disable unused clocks/power domains during boot
