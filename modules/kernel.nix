@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  boot.kernelPackages = pkgs.linuxPackages_testing;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
   # Critical boot parameters for Snapdragon X Elite/Plus
   boot.kernelParams = [
     # Don't disable unused clocks/power domains during boot
