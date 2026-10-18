@@ -1,0 +1,16 @@
+--- a/drivers/net/wireless/ath/ath12k/core.c
++++ b/drivers/net/wireless/ath/ath12k/core.c
+@@ -80,6 +80,13 @@
+ 	if (ath12k_acpi_get_disable_rfkill(ab))
+ 		return 0;
+ 
++	/* Surface Laptop 7: the firmware's rfkill GPIO reads as "radio off" and
++	 * there is no ACPI table to say so, which hard-blocks Wi-Fi. Skip it.
++	 */
++	if (of_machine_is_compatible("microsoft,romulus13") ||
++	    of_machine_is_compatible("microsoft,romulus15"))
++		return 0;
++
+ 	for (i = 0; i < ab->num_radios; i++) {
+ 		ar = ab->pdevs[i].ar;
+ 

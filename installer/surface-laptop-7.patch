@@ -1,0 +1,71 @@
+diff --git a/devices.nix b/devices.nix
+index 2e884d0..8aebf85 100644
+--- a/devices.nix
++++ b/devices.nix
+@@ -7,4 +7,8 @@
+     displayName = "Lenovo ThinkPad T14s Gen 6";
+     deviceTreeName = "qcom/x1e78100-lenovo-thinkpad-t14s.dtb";
+   };
++  microsoft-surface-laptop-7 = {
++    displayName = "Microsoft Surface Laptop 7 (13.8 inch)";
++    deviceTreeName = "qcom/x1e80100-microsoft-romulus13.dtb";
++  };
+ }
+diff --git a/modules/x1e80100.nix b/modules/x1e80100.nix
+index 0f8f09e..e163f22 100644
+--- a/modules/x1e80100.nix
++++ b/modules/x1e80100.nix
+@@ -90,6 +90,16 @@ in
+               "reset_gpio"
+               "gpio_shared_proxy"
+             ])
++
++            (lib.mkIf cfg.microsoft-surface-laptop-7.enable [
++              # Display: generic edp-panel driven by pwm-backlight (same pieces as the t14s LCD)
++              "pwm_bl"
++              "leds_qcom_lpg"
++
++              # USB: the device tree has an NXP PTN3222 eUSB2 repeater, like the t14s
++              "phy_nxp_ptn3222"
++              "phy_qcom_qmp_usb"
++            ])
+           ];
+ 
+           boot.kernelParams = lib.mkMerge [
+@@ -137,8 +147,36 @@ in
+               "qcom/x1e80100/adsp.mbn"
+               "qcom/x1e80100/adsp_dtb.mbn"
+             ])
++
++            (lib.mkIf cfg.microsoft-surface-laptop-7.enable [
++              # Paths come from firmware-name in x1e80100-microsoft-romulus.dtsi.
++              "qcom/x1e80100/microsoft/qcdxkmsuc8380.mbn"
++              "qcom/x1e80100/microsoft/Romulus/qcadsp8380.mbn"
++              "qcom/x1e80100/microsoft/Romulus/adsp_dtbs.elf"
++              "qcom/x1e80100/microsoft/Romulus/qccdsp8380.mbn"
++              "qcom/x1e80100/microsoft/Romulus/cdsp_dtbs.elf"
++              "qcom/x1e80100/microsoft/Romulus/adspr.jsn"
++              "qcom/x1e80100/microsoft/Romulus/adsps.jsn"
++              "qcom/x1e80100/microsoft/Romulus/adspua.jsn"
++              "qcom/x1e80100/microsoft/Romulus/battmgr.jsn"
++              "qcom/x1e80100/microsoft/Romulus/cdspr.jsn"
++            ])
+           ];
+ 
++          # Proprietary blobs extracted by extract-sl7-firmware.sh into ../firmware.
++          # hiPrio: our patched ath12k board-2.bin must win over linux-firmware's copy
++          # (hardware.firmware ignores collisions; priority decides, then list order).
++          hardware.firmware = lib.mkIf cfg.microsoft-surface-laptop-7.enable (
++            lib.mkBefore [
++              (lib.hiPrio (
++                pkgs.runCommand "microsoft-surface-laptop-7-firmware" { } ''
++                  mkdir -p $out/lib/firmware
++                  cp -r ${../firmware}/. $out/lib/firmware/
++                ''
++              ))
++            ]
++          );
++
+           # Point libcamera at the ov02c10 IPA tuning file for the webcam sensor.
+           # This is mainly to remove green tint, but can be tweaked further.
+           environment.sessionVariables.LIBCAMERA_IPA_CONFIG_PATH = [

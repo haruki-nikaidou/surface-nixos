@@ -1,129 +1,50 @@
-# NixOS Installer for Surface Laptop 7 (Snapdragon X Elite)
+# NixOS on the Surface Laptop 7 (13.8", Snapdragon X Elite)
 
-Custom NixOS installer ISO with Qualcomm X Elite support for Surface Laptop 7.
+| Directory          | What it is                                                                                                                                                                          |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installer/`       | Installer ISO and the `x1e` hardware NixOS module (kernel, device tree, firmware). Based on [kuruczgy/x1e-nixos-config](https://github.com/kuruczgy/x1e-nixos-config); see its [README](installer/README.md). |
+| `installer/custom/` | Personal customisation of the ISO. `ssh.nix` holds **my** SSH public keys for the live system: replace them or drop the module from `deviceISO` in `installer/flake.nix`.         |
+| `profile/`         | My actual system: a separate flake using the `x1e` module, KDE Plasma 6, home-manager, Japanese region settings with an English UI.                                                 |
 
-## Prerequisites
+`installer/firmware/` holds proprietary blobs extracted from the Windows driver package by `installer/extract-sl7-firmware.sh`.
 
-- NixOS x86_64 system with Nix flakes enabled
-- At least 32GB RAM recommended (kernel compilation is memory-hungry)
-- ~50GB free disk space
-- Fast internet connection (first build downloads a lot)
+## Build the ISO
 
-## Building the ISO
-
-```bash
-# Clone or copy this directory
-cd surface-nixos
-
-# Build the ISO (cross-compiles aarch64 on x86_64)
-nix build .#iso --log-format bar-with-logs
-
-# The ISO will be at:
-# result/iso/nixos-surface-laptop7-*.iso
+```console
+$ cd installer
+$ nix build .#microsoft-surface-laptop-7-iso
+$ dd if=result/iso/nixos-x1e80100-microsoft-romulus13.iso of=/dev/sdX bs=4M status=progress conv=fdatasync
 ```
 
-### Build Time Estimates
+This cross-compiles from `x86_64-linux`. Boot it with Secure Boot disabled. Then connect to Wi-Fi with `nmtui` and SSH in as `nixos`.
 
-With your ~860s allmodconfig build time:
-- Kernel alone: ~15-20 minutes
-- Full ISO: ~30-45 minutes (first build)
-- Subsequent builds: Much faster (Nix caching)
+## Install the profile
 
-### Debugging Build Issues
+Partition and mount the target at `/mnt` (root ext4 + ESP at `/mnt/boot`). The filesystem UUIDs in `profile/system/hardware.nix` must match the disk.
 
-```bash
-# Build just the kernel first to verify it works
-nix build .#kernel --log-format bar-with-logs
+The profile pulls in `../installer` as a relative flake input, so the whole repository has to be on the laptop. New files must be at least `git add`ed, because flakes only see tracked files.
 
-# Check what DTBs are included
-ls result/dtbs/qcom/ | grep x1e
-
-# Expected files for Surface Laptop 7:
-# - x1p64100-microsoft-denali.dtb
+```console
+$ rsync -a --exclude result ./ nixos@<laptop>:surface-nixos/
+$ ssh nixos@<laptop>
+$ sudo nixos-install --root /mnt --no-channel-copy --no-root-password --flake ~/surface-nixos/profile#nixos-surface
 ```
 
-## Writing the ISO to USB
+Once the repository is pushed, `--flake 'github:haruki-nikaidou/surface-nixos?dir=profile#nixos-surface'` works too.
 
-```bash
-# Find your USB device
-lsblk
+The kernel carries a Surface-specific patch, so `nixos-install` compiles it on the laptop.
 
-# Write ISO (replace /dev/sdX with your device!)
-sudo dd if=result/iso/nixos-surface-laptop7-*.iso of=/dev/sdX bs=4M status=progress oflag=sync
+If the firmware doesn't pick up systemd-boot after a reboot, add the boot entry from the ISO's EFI shell. The steps are in the [installer README](installer/README.md#installation).
+
+After the first boot, log in as `haruki` with password `nixos`, then change it with `passwd`. SSH accepts keys only, for `haruki` and for `root`.
+
+## Update remotely
+
+```console
+$ cd profile
+$ nixos-rebuild switch --flake .#nixos-surface --target-host root@<laptop> --build-host root@<laptop>
 ```
 
-## Booting
+## License
 
-1. Insert USB into Surface Laptop 7
-2. Power off completely (hold power button 10+ seconds)
-3. Hold Volume Down + Power to enter UEFI
-4. Disable Secure Boot (Boot Configuration → Secure Boot → Disabled)
-5. Configure boot order or use Boot Menu (Volume Up + Power at boot)
-6. Select USB device
-7. In GRUB menu, select "NixOS Installer - Surface Laptop 7"
-
-## What Should Work
-
-- Display (via Adreno GPU)
-- USB ports (some)
-- NVMe storage
-- Basic keyboard (in GRUB)
-
-## What Won't Work (Yet)
-
-- Built-in keyboard/touchpad after kernel boot (SAM driver issue)
-- Touchscreen
-- Audio
-- WiFi (needs firmware from Windows)
-- Battery reporting
-- Cameras
-
-## Workaround: External Keyboard
-
-Until SAM drivers are working, you MUST have a USB keyboard connected to use the installer once Linux boots.
-
-## Extracting Firmware from Windows
-
-Some hardware needs firmware from the Windows partition. On Windows:
-
-```powershell
-# Find firmware location
-Get-ChildItem -Path "C:\Windows\System32\DriverStore\FileRepository" -Filter "*.msi" -Recurse
-
-# Common locations:
-# - qcadsprpc (audio DSP)
-# - qcwlanXXX (WiFi)
-# - qcsubsys_XXX (various subsystems)
-```
-
-Copy these to `/lib/firmware/qcom/x1p64100/` on your NixOS install.
-
-## Troubleshooting
-
-### Black screen immediately after selecting boot entry
-
-The DTB isn't being loaded. Try:
-1. Verify the DTB exists: In GRUB, press `c` for console, then `ls ($root)/boot/dtbs/qcom/`
-2. Try the "Generic X1E" fallback option
-3. Add more kernel params: Press `e` on boot entry, add `nomodeset`
-
-### Kernel panic or hang
-
-Check if it's a DTB mismatch. The Surface Laptop 7 uses `x1p64100-microsoft-denali.dtb`.
-
-### No display at all
-
-Try adding `video=efifb` to kernel params or booting with an external monitor via USB-C.
-
-## Contributing
-
-If you get something working, please:
-1. Document what you did
-2. Consider upstreaming to nixpkgs/nixos-hardware
-3. Report to https://github.com/linux-surface/linux-surface/issues/1590
-
-## References
-
-- [linux-surface issue #1590](https://github.com/linux-surface/linux-surface/issues/1590)
-- [Ubuntu Concept for X Elite](https://discourse.ubuntu.com/t/faq-ubuntu-25-04-on-snapdragon-x-elite/61016)
-- [Kernel mailing list patches](https://lore.kernel.org/lkml/20240809-topic-sl7-v1-0-2090433d8dfc@quicinc.com/)
+MIT, see [LICENSE](LICENSE).
