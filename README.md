@@ -22,17 +22,27 @@ This cross-compiles from `x86_64-linux`. Boot it with Secure Boot disabled. Then
 
 Partition and mount the target at `/mnt` (root ext4 + ESP at `/mnt/boot`). The filesystem UUIDs in `profile/system/hardware.nix` must match the disk.
 
-The profile pulls in `../installer` as a relative flake input, so the whole repository has to be on the laptop. New files must be at least `git add`ed, because flakes only see tracked files.
+The system is built on an x86_64 machine with aarch64 binfmt (`boot.binfmt.emulatedSystems = [ "aarch64-linux" ]`). The kernel is cross-compiled at native speed. Everything else is native aarch64 and comes from the binary cache. Flakes only see tracked files, so `git add` new files first.
 
 ```console
-$ rsync -a --exclude result ./ nixos@<laptop>:surface-nixos/
-$ ssh nixos@<laptop>
-$ sudo nixos-install --root /mnt --no-channel-copy --no-root-password --flake ~/surface-nixos/profile#nixos-surface
+$ cd profile
+$ nix build .#nixosConfigurations.nixos-surface.config.system.build.toplevel --out-link result-surface
 ```
 
-Once the repository is pushed, `--flake 'github:haruki-nikaidou/surface-nixos?dir=profile#nixos-surface'` works too.
+Writing into the target's store needs root on the live ISO. Let root reuse the `nixos` user's keys:
 
-The kernel carries a Surface-specific patch, so `nixos-install` compiles it on the laptop.
+```console
+$ ssh nixos@<laptop> 'sudo install -d -m 700 /root/.ssh && sudo cp /etc/ssh/authorized_keys.d/nixos /root/.ssh/authorized_keys'
+```
+
+Copy the closure straight into `/mnt/nix/store`; the ISO's RAM-backed store is too small. Then install it:
+
+```console
+$ nix copy --to 'ssh://root@<laptop>?remote-store=local%3Froot=%2Fmnt' ./result-surface
+$ ssh root@<laptop> nixos-install --root /mnt --no-channel-copy --no-root-password --system "$(readlink -f result-surface)"
+```
+
+Don't run `nixos-install --flake` on the laptop itself. It would try to build the cross-compiled kernel, which needs an x86_64 builder.
 
 If the firmware doesn't pick up systemd-boot after a reboot, add the boot entry from the ISO's EFI shell. The steps are in the [installer README](installer/README.md#installation).
 
@@ -40,10 +50,14 @@ After the first boot, log in as `haruki` with password `nixos`, then change it w
 
 ## Update remotely
 
+Build here and push the result to the laptop:
+
 ```console
 $ cd profile
-$ nixos-rebuild switch --flake .#nixos-surface --target-host root@<laptop> --build-host root@<laptop>
+$ nixos-rebuild switch --flake .#nixos-surface --target-host root@<laptop>
 ```
+
+`nixos-rebuild` on the laptop itself works only while its kernel is unchanged, because a new kernel needs the x86_64 cross build.
 
 ## License
 

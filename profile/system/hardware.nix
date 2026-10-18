@@ -1,8 +1,22 @@
-{ ... }:
+{ inputs, ... }:
 
+let
+  # Only the kernel is cross-compiled on an x86_64 machine; everything else
+  # stays native aarch64 and comes from the binary cache. Build the system on
+  # an x86_64 host with aarch64 binfmt and copy it over (see ../../README.md).
+  # Rebuilding on the laptop itself works only while the resulting kernel is
+  # already in its store.
+  pkgsCross = import inputs.nixpkgs {
+    localSystem.system = "x86_64-linux";
+    crossSystem.system = "aarch64-linux";
+  };
+in
 {
   hardware.microsoft-surface-laptop-7.enable = true;
   hardware.enableRedistributableFirmware = true;
+
+  # boot.kernelPatches (the SL7 ath12k fix) is still applied on top.
+  boot.kernelPackages = pkgsCross.linuxPackages_latest;
 
   boot.loader.systemd-boot = {
     enable = true;
