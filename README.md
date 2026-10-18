@@ -59,6 +59,17 @@ $ nixos-rebuild switch --flake .#nixos-surface --target-host root@<laptop>
 
 `nixos-rebuild` on the laptop itself works only while its kernel is unchanged, because a new kernel needs the x86_64 cross build.
 
+## Touchpad
+
+The touchpad is a HID-over-SPI device that only sends raw heatmaps. `iptsd` turns those into touch input. The `x1e` module ships a generic calibration for it. If palm rejection or tap detection feels wrong, recalibrate on the laptop:
+
+```console
+$ sudo iptsd-find-hidraw
+$ sudo iptsd-calibrate /dev/hidrawN
+```
+
+Move one finger over the whole surface, including the edges, then press Ctrl+C. Copy the printed `[Contacts]` values into `installer/modules/x1e80100.nix`.
+
 ## License
 
 MIT, see [LICENSE](LICENSE).

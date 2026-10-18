@@ -8,6 +8,7 @@
 let
   devices = import ../devices.nix;
   cfg = config.hardware;
+  iptsd = pkgs.callPackage ../packages/iptsd.nix { };
 in
 {
   options.hardware = lib.mapAttrs (_: device: {
@@ -130,12 +131,19 @@ in
 
           boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
 
-          # Without this, ath12k applies the firmware's rfkill GPIO, which reads as
-          # "radio off" on the Surface Laptop 7 and hard-blocks Wi-Fi.
           boot.kernelPatches = lib.mkIf cfg.microsoft-surface-laptop-7.enable [
+            # Without this, ath12k applies the firmware's rfkill GPIO, which reads as
+            # "radio off" on the Surface Laptop 7 and hard-blocks Wi-Fi.
             {
               name = "ath12k-surface-laptop-7-rfkill";
               patch = ../packages/ath12k-surface-laptop-7-rfkill.patch;
+            }
+            # The touchpad sits on a QSPI bus (spi19) and speaks HID-over-SPI;
+            # mainline has neither the driver nor the device tree node.
+            {
+              name = "surface-laptop-7-spi-hid";
+              patch = ../packages/surface-laptop-7-spi-hid.patch;
+              structuredExtraConfig.SPI_HID = lib.kernel.module;
             }
           ];
 
@@ -195,6 +203,34 @@ in
             ''}"
           ];
         }
+
+        (lib.mkIf cfg.microsoft-surface-laptop-7.enable {
+          # The touchpad reports raw IPTS heatmaps over hidraw; iptsd turns them
+          # into multitouch input. Upstream iptsd 3.1.0 lacks the haptic click fixes.
+          systemd.packages = [ iptsd ];
+          services.udev.packages = [ iptsd ];
+          environment.systemPackages = [ iptsd ];
+
+          # Finger size calibration from `iptsd-calibrate` on a Surface Laptop 7.
+          # Recalibrate with `sudo iptsd-calibrate /dev/hidrawN` (N from
+          # `sudo iptsd-find-hidraw`) and replace these values.
+          environment.etc."iptsd.d/91-calibration-045E-0C77.conf".text = ''
+            [Device]
+            Vendor = 0x045E
+            Product = 0x0C77
+
+            [Contacts]
+            SizeMin = 0.700
+            SizeMax = 3.300
+            AspectMin = 1.000
+            AspectMax = 3.700
+          '';
+
+          # iptsd does not reattach when the hidraw node survives suspend.
+          powerManagement.resumeCommands = ''
+            ${config.systemd.package}/bin/udevadm trigger --action=add --subsystem-match=hidraw
+          '';
+        })
       ]
     );
 }
